@@ -24,56 +24,54 @@ colors = [blue
           , black
           ]
 
-pomodoroCount = 2 #TODO 4
+pomodoroCount = 4
 minutesInPomodoro = 30
 secondsForFlash = .25
-secondsPerMinute = .5 #TODO 60
+secondsPerMinute = 6 #TODO: change back to 60 after demo
 
-#pomodoros
-for pomodoro in range(0, pomodoroCount):
-    #flash blue/black to indicate pomodoro is starting
+def flash_color(color):
     for iteration in range(0, 10):
         for pixel in range(0, pixelCount):
-            colorIndex = 0 if iteration % 2 == 0 else len(colors) - 1
-            strip.setPixelColor(pixel, colors[colorIndex])
+            strip.setPixelColor(pixel, color if iteration % 2 == 0 else black)
             
         strip.show()
-        time.sleep(secondsForFlash)
+        time.sleep(secondsForFlash)    
 
+while True:
+    #pomodoros
+    for pomodoro in range(0, pomodoroCount):
+        #flash blue/black to indicate pomodoro is starting
+        flash_color(blue)
+
+        for minute in range(0, minutesInPomodoro):
+            #flash red/black to indicate when break is starting
+            if minute == minutesInPomodoro * (len(colors) - 1) / len(colors):
+                flash_color(red)
+
+            for pixel in range(0, pixelCount):
+                if pixel + minute < pixelCount or pomodoro < pomodoroCount - 1:
+                    color = colors[(pixel + minute) % pixelCount / (pixelCount / len(colors))]
+                else:
+                    color = black
+
+                strip.setPixelColor(pixel, color)
+
+            print pomodoro, minute
+            strip.show()
+            time.sleep(secondsPerMinute)
+
+    #break
     for minute in range(0, minutesInPomodoro):
-        #flash red/black to indicate when break is starting
-        if minute == minutesInPomodoro * (len(colors) - 1) / len(colors):
-            for iteration in range(0, 10):
-                for pixel in range(0, pixelCount):
-                    colorIndex = len(colors) - 2 if iteration % 2 == 0 else len(colors) - 1
-                    strip.setPixelColor(pixel, colors[colorIndex])
+        #black for break
+        for pixel in range(0, pixelCount - minute):
+            strip.setPixelColor(pixel, black)
 
-                strip.show()
-                time.sleep(secondsForFlash)
+        #next pomodoro
+        for pixel in range(pixelCount - minute, pixelCount):
+            color = colors[(minute + pixel) % pixelCount / (pixelCount / len(colors))]
+            strip.setPixelColor(pixel, color)
 
-        for pixel in range(0, pixelCount):
-            if pixel + minute < pixelCount or pomodoro < pomodoroCount - 1:
-                colorIndex = (pixel + minute) % pixelCount / (pixelCount / len(colors))
-            else:
-                colorIndex = len(colors) - 1
-            strip.setPixelColor(pixel, colors[colorIndex])
-
-        print pomodoro, minute
+        print minute
         strip.show()
         time.sleep(secondsPerMinute)
-
-#break
-for minute in range(0, minutesInPomodoro):
-    #black for break
-    for pixel in range(0, pixelCount - minute):
-        strip.setPixelColor(pixel, colors[len(colors) - 1])
-
-    #next pomodoro
-    for pixel in range(pixelCount - minute, pixelCount):
-        colorIndex = (minute + pixel) % pixelCount / (pixelCount / len(colors))
-        strip.setPixelColor(pixel, colors[colorIndex])
-
-    print minute
-    strip.show()
-    time.sleep(secondsPerMinute)
-    
+        
